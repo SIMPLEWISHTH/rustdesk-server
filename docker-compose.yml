@@ -1,0 +1,29 @@
+# RustDesk Server OSS - hbbs (ID/rendezvous) + hbbr (relay)
+# Primary stack: hetzner-sw02-fsn1 (49.13.122.55), deployed via Coolify dockercompose.
+# Ed25519 key pair is generated into the shared volume on first start.
+# Standby server: copy BOTH /root/id_ed25519 and /root/id_ed25519.pub from the
+# primary volume into the standby volume BEFORE its first start, so all clients
+# keep using the same public key.
+services:
+  hbbs:
+    image: rustdesk/rustdesk-server:1.1.16
+    command: hbbs -r 49.13.122.55:21117 -k _
+    restart: unless-stopped
+    volumes:
+      - rustdesk-data:/root
+    ports:
+      - "21115:21115"
+      - "21116:21116"
+      - "21116:21116/udp"
+
+  hbbr:
+    image: rustdesk/rustdesk-server:1.1.16
+    command: hbbr -k _
+    restart: unless-stopped
+    volumes:
+      - rustdesk-data:/root
+    ports:
+      - "21117:21117"
+
+volumes:
+  rustdesk-data:
