@@ -1,0 +1,32 @@
+# RustDesk Server OSS - hbbs + hbbr (Asia primary)
+# Host: rd01-swserver (ReadyIDC, 157.85.96.83, Bangkok/TH ~16ms from Chiang Mai)
+# Same key pair as hetzner-sw02 (warm standby). Only ONE stack is active for
+# the fleet at a time; clients point at relay-swrd.simplewish.me.
+# NOTE: this file uses a plain named volume `rustdesk-data`; docker compose
+# prefixes it with the project name (rustdesk_rustdesk-data) when run from a
+# directory named `rustdesk`. Pre-populate the PREFIXED volume path with the
+# shared key pair BEFORE first start:
+#   /var/lib/docker/volumes/rustdesk_rustdesk-data/_data/
+services:
+  hbbs:
+    image: rustdesk/rustdesk-server:1.1.16
+    command: hbbs -r 157.85.96.83:21117 -k _
+    restart: unless-stopped
+    volumes:
+      - rustdesk-data:/root
+    ports:
+      - "21115:21115"
+      - "21116:21116"
+      - "21116:21116/udp"
+
+  hbbr:
+    image: rustdesk/rustdesk-server:1.1.16
+    command: hbbr -k _
+    restart: unless-stopped
+    volumes:
+      - rustdesk-data:/root
+    ports:
+      - "21117:21117"
+
+volumes:
+  rustdesk-data:
